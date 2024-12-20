@@ -1,66 +1,28 @@
-## Foundry
+## Создание CTF задачи: Broken Merkle tree
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+### Легенда:
+Студент с прошлого года решил в качестве проекта по курсу "введение в blockchain" создать свою CTF задачу, однако он допустил в ней ошибку.
 
-Foundry consists of:
+## Условие задачи
+Вам предоставлен смарт-контракт MerkleTreeTask. Данный контракт обладает тремя методами
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+1. Метод generateTest генерирует (псевдослучайно) по какой-то строке (seed) набор "транзакций" - строк, для которых требуется вычислить merkle root. Выставляет флаг isSolved = false.
+2. Метод submit который принимает Ваш merkle root и сравнивает его с ответом, если задача решена, будет выставлен флаг isSolved = true.
+3. Метод solved возвращает значение флага isSolved.
 
-## Documentation
+Вам требуется написать свой смарт-контракт Soltion, вызвать в нем MerkleTreeTask, сгенерировать какой-то набор транзакций, найти для них merkle root и загузить его в MerkleTreeTask.
+Однако, студент допустил ошибку при реализации собственного алгоритма нахождения merkle root, так что если Вы хотите решить данную задачу, Вам потребуется найти такой набор входных данных, на котором алгоритм студента работает без ошибок.
 
-https://book.getfoundry.sh/
 
-## Usage
+## Решение задачи:
+1. Студент допустил ошибку при вычислении хешей на уровнях merkle tree с нечетным количеством узлов.
+2. Псевдослучайная генерация тестов работает следующим образом:
+    Генерируется массив строк вида `"Transaction {i}"` для каждого `i` в `{1, ..., base + (len(seed) % mod)}`.
+    Где `base` и `mod` - магические константы в реализации, а `len(seed)` - длина строки, которую студент указал в качестве начальной.
+3. Для решения задачи студенту необходимо подобрать строку такой длины, чтобы значение `base + (len(seed) % mod)` являлось степенью двойки, тогда в алгоритме автора не возникнет ни одного уровня дерева с нечетным количеством листов и merkle root будет посчитан правильно.
 
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## Возможные улучшения
+1. Усложнение алгоритма генерации. Можно изменить алгоритм псевдослучайной генерации тестов, например привязать его к хэшу `seed` строки.
+2. Добавить в генерацию "соль" для того, чтобы нельзя было всем студентам отправлять один и тот же хэш.
+3. Сделать генерацию тестов платной или слишком долгой, чтобы стимулировать студентов решать задачу аналитически.
+4. Реализовать другие алгоритмы работы с merkle tree.
